@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useMemo } from "react";
 import { FlatList, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useAuction } from "@/context/AuctionContext";
 
@@ -51,43 +52,56 @@ export default function ResultsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: topPadding + 12, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+      {/* Glass Header */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.02)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.glassHeader, { paddingTop: topPadding + 12, borderBottomColor: "rgba(255,255,255,0.06)" }]}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
           <Feather name="arrow-left" size={24} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Auction Results</Text>
-        <TouchableOpacity onPress={handleShare}>
-          <Feather name="share-2" size={22} color={colors.primary} />
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>🏆 Results</Text>
+        <TouchableOpacity onPress={handleShare} style={styles.headerIcon}>
+          <Feather name="share-2" size={22} color="#818cf8" />
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       <FlatList
         data={soldPlayers}
         keyExtractor={(p) => p.id}
         ListHeaderComponent={
           <View>
-            {/* Summary Cards */}
+            {/* Summary Cards - Glass */}
             <View style={styles.summaryRow}>
-              <View style={[styles.summaryCard, { backgroundColor: "#1d4ed815", borderColor: "#1d4ed840" }]}>
-                <Text style={[styles.summaryVal, { color: "#1d4ed8" }]}>{soldPlayers.length}</Text>
+              <View style={[styles.glassSummary, { borderColor: "rgba(129,140,248,0.2)" }]}>
+                <Text style={[styles.summaryVal, { color: "#818cf8" }]}>{soldPlayers.length}</Text>
                 <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Sold</Text>
               </View>
-              <View style={[styles.summaryCard, { backgroundColor: "#16a34a15", borderColor: "#16a34a40" }]}>
-                <Text style={[styles.summaryVal, { color: "#16a34a" }]}>₹{totalValue}L</Text>
+              <View style={[styles.glassSummary, { borderColor: "rgba(52,211,153,0.2)" }]}>
+                <Text style={[styles.summaryVal, { color: "#34d399" }]}>₹{totalValue}L</Text>
                 <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Total</Text>
               </View>
-              <View style={[styles.summaryCard, { backgroundColor: "#d9770615", borderColor: "#d9770640" }]}>
-                <Text style={[styles.summaryVal, { color: "#d97706" }]}>
+              <View style={[styles.glassSummary, { borderColor: "rgba(244,114,182,0.2)" }]}>
+                <Text style={[styles.summaryVal, { color: "#f472b6" }]}>
                   {players.filter((p) => !p.teamId).length}
                 </Text>
                 <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Unsold</Text>
               </View>
             </View>
 
-            {/* Top Spender */}
+            {/* Top Spender - Glass with Neon Glow */}
             {topBuyerTeam && (
-              <View style={[styles.topCard, { backgroundColor: topBuyerTeam.color + "15", borderColor: topBuyerTeam.color + "40" }]}>
-                <Feather name="trophy" size={20} color={topBuyerTeam.color} />
+              <LinearGradient
+                colors={[topBuyerTeam.color + "20", topBuyerTeam.color + "10"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.glassTopCard, { borderColor: topBuyerTeam.color + "40" }]}
+              >
+                <View style={[styles.trophyIcon, { backgroundColor: topBuyerTeam.color + "30" }]}>
+                  <Feather name="trophy" size={20} color={topBuyerTeam.color} />
+                </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={[styles.topCardLabel, { color: colors.mutedForeground }]}>Biggest Spender</Text>
                   <Text style={[styles.topCardTeam, { color: topBuyerTeam.color }]}>{topBuyerTeam.name}</Text>
@@ -95,23 +109,25 @@ export default function ResultsScreen() {
                 <Text style={[styles.topCardAmt, { color: topBuyerTeam.color }]}>
                   ₹{topBuyerTeam.budget - topBuyerTeam.remainingBudget}L
                 </Text>
-              </View>
+              </LinearGradient>
             )}
 
             {/* Team Summary */}
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Team Summary</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>📊 Team Summary</Text>
             {teams.map((team) => {
               const tp = players.filter((p) => p.teamId === team.id);
               const spent = team.budget - team.remainingBudget;
               const understrength = tp.length < MIN_SQUAD;
               return (
-                <View
+                <LinearGradient
                   key={team.id}
+                  colors={["rgba(255,255,255,0.04)", "rgba(255,255,255,0.01)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
                   style={[
-                    styles.teamRow,
+                    styles.glassTeamRow,
                     {
-                      backgroundColor: colors.card,
-                      borderColor: understrength ? "#d97706" : colors.border,
+                      borderColor: understrength ? "#fbbf2440" : "rgba(255,255,255,0.06)",
                       borderWidth: understrength ? 1.5 : 1,
                     },
                   ]}
@@ -121,7 +137,7 @@ export default function ResultsScreen() {
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Text style={[styles.teamRowName, { color: colors.foreground }]}>{team.name}</Text>
                       {understrength && (
-                        <View style={styles.warnBadge}>
+                        <View style={styles.glassWarnBadge}>
                           <Text style={styles.warnBadgeText}>⚠️ {tp.length}/{MIN_SQUAD}</Text>
                         </View>
                       )}
@@ -130,19 +146,25 @@ export default function ResultsScreen() {
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
                     <Text style={[styles.teamRowSpent, { color: colors.foreground }]}>₹{spent}L</Text>
-                    <Text style={[styles.teamRowRemaining, { color: "#16a34a" }]}>₹{team.remainingBudget}L left</Text>
+                    <Text style={[styles.teamRowRemaining, { color: "#34d399" }]}>₹{team.remainingBudget}L left</Text>
                   </View>
-                </View>
+                </LinearGradient>
               );
             })}
 
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Top Sold Players</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🏅 Top Sold Players</Text>
           </View>
         }
         renderItem={({ item, index }) => {
           const team = teams.find((t) => t.id === item.teamId);
           return (
-            <View style={[styles.playerRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <LinearGradient
+              key={item.id}
+              colors={["rgba(255,255,255,0.04)", "rgba(255,255,255,0.01)"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.glassPlayerRow, { borderColor: "rgba(255,255,255,0.06)" }]}
+            >
               <Text style={[styles.rank, { color: colors.mutedForeground }]}>#{index + 1}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.playerName, { color: colors.foreground }]}>{item.name}</Text>
@@ -151,14 +173,16 @@ export default function ResultsScreen() {
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={[styles.soldPrice, { color: "#16a34a" }]}>₹{item.soldPrice}L</Text>
+                <Text style={[styles.soldPrice, { color: "#34d399", textShadowColor: "#34d399", textShadowRadius: 10 }]}>
+                  ₹{item.soldPrice}L
+                </Text>
                 {team && (
-                  <View style={[styles.teamBadge, { backgroundColor: team.color }]}>
-                    <Text style={styles.teamBadgeText}>{team.shortName}</Text>
+                  <View style={[styles.glassTeamBadge, { backgroundColor: team.color + "30", borderColor: team.color + "40" }]}>
+                    <Text style={[styles.teamBadgeText, { color: team.color }]}>{team.shortName}</Text>
                   </View>
                 )}
               </View>
-            </View>
+            </LinearGradient>
           );
         }}
         contentContainerStyle={{ paddingBottom: Platform.OS === "web" ? 80 : 80 }}
@@ -175,44 +199,93 @@ export default function ResultsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: 1,
+  glassHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
   },
-  headerTitle: { fontSize: 18, fontWeight: "700" },
-  summaryRow: { flexDirection: "row", padding: 16, gap: 10 },
-  summaryCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 14, alignItems: "center" },
-  summaryVal: { fontSize: 22, fontWeight: "800" },
-  summaryLabel: { fontSize: 12, marginTop: 4 },
-  topCard: {
-    marginHorizontal: 16, borderRadius: 14, borderWidth: 1,
-    padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 12,
+  headerIcon: { padding: 4 },
+  headerTitle: { fontSize: 20, fontWeight: "800" },
+  summaryRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginTop: 16, marginBottom: 8 },
+  glassSummary: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: "center",
   },
-  topCardLabel: { fontSize: 12 },
+  summaryVal: { fontSize: 22, fontWeight: "900" },
+  summaryLabel: { fontSize: 12, marginTop: 4, fontWeight: "600" },
+  glassTopCard: {
+    marginHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  trophyIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  topCardLabel: { fontSize: 12, fontWeight: "500" },
   topCardTeam: { fontSize: 16, fontWeight: "700" },
   topCardAmt: { fontSize: 20, fontWeight: "800" },
-  sectionTitle: { fontSize: 18, fontWeight: "700", paddingHorizontal: 20, paddingBottom: 10 },
-  teamRow: {
-    flexDirection: "row", alignItems: "center", marginHorizontal: 16,
-    borderRadius: 12, padding: 14, marginBottom: 8, gap: 10,
+  sectionTitle: { fontSize: 18, fontWeight: "700", paddingHorizontal: 20, paddingBottom: 10, marginTop: 4 },
+  glassTeamRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 8,
+    gap: 10,
   },
   teamDot: { width: 12, height: 12, borderRadius: 6 },
   teamRowName: { fontSize: 14, fontWeight: "600" },
   teamRowPlayers: { fontSize: 12, marginTop: 2 },
   teamRowSpent: { fontSize: 15, fontWeight: "700" },
   teamRowRemaining: { fontSize: 12, marginTop: 2 },
-  warnBadge: { backgroundColor: "#d9770620", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  warnBadgeText: { fontSize: 11, color: "#d97706", fontWeight: "600" },
-  playerRow: {
-    flexDirection: "row", alignItems: "center", marginHorizontal: 16,
-    borderRadius: 12, borderWidth: 1, padding: 14, marginBottom: 8, gap: 10,
+  glassWarnBadge: {
+    backgroundColor: "#fbbf2420",
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: "#fbbf2440",
+  },
+  warnBadgeText: { fontSize: 11, color: "#fbbf24", fontWeight: "600" },
+  glassPlayerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 8,
+    gap: 10,
   },
   rank: { fontSize: 16, fontWeight: "700", width: 30 },
   playerName: { fontSize: 14, fontWeight: "600" },
   playerMeta: { fontSize: 12, marginTop: 2 },
   soldPrice: { fontSize: 16, fontWeight: "700" },
-  teamBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginTop: 4 },
-  teamBadgeText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  glassTeamBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 4,
+    borderWidth: 1,
+  },
+  teamBadgeText: { fontSize: 11, fontWeight: "700" },
   empty: { alignItems: "center", paddingTop: 60, gap: 12, paddingHorizontal: 20 },
   emptyText: { fontSize: 16, textAlign: "center" },
 });
