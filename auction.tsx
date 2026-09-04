@@ -49,6 +49,7 @@ export default function AuctionScreen() {
   const bidScaleAnim = useRef(new Animated.Value(1)).current;
   const soldFlashAnim = useRef(new Animated.Value(0)).current;
   const cardGlowAnim = useRef(new Animated.Value(0)).current;
+  const flowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
@@ -187,8 +188,28 @@ export default function AuctionScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomPad + 120 }}>
-        {/* Player Card with glow */}
-        <Animated.View style={[styles.auctionCard, { backgroundColor: roleColor, opacity: cardGlowOpacity }]}>
+        {/* Player Card with Liquid RGB Glow */}
+<Animated.View
+  style={[
+    styles.auctionCard,
+    {
+      backgroundColor: roleColor,
+      opacity: cardGlowOpacity,
+      borderWidth: 3,
+      borderColor: flowAnim.interpolate({
+        inputRange: [0, 0.3, 0.5, 0.7, 1],
+        outputRange: ['transparent', '#ff0000', '#00ff00', '#0000ff', 'transparent']
+      }),
+      shadowColor: flowAnim.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: ['transparent', '#ff00ff88', 'transparent']
+      }),
+      shadowRadius: 35,
+      shadowOpacity: 0.8,
+      elevation: 20,
+    },
+  ]}
+>
           {currentPlayer.image ? (
             <Image source={{ uri: currentPlayer.image }} style={styles.playerAvatarImg} />
           ) : (
