@@ -6,11 +6,23 @@ import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 
 function NativeTabLayout() {
+  const colors = useColors();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   return (
-    <NativeTabs>
+    <NativeTabs
+      style={{
+        backgroundColor: "rgba(255,255,255,0.04)",
+        borderTopWidth: 1,
+        borderTopColor: "rgba(255,255,255,0.06)",
+        backdropFilter: "blur(20px)",
+      }}
+    >
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
         <Label>Home</Label>
@@ -30,6 +42,7 @@ function NativeTabLayout() {
 function ClassicTabLayout() {
   const colors = useColors();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
@@ -37,22 +50,33 @@ function ClassicTabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: "#818cf8",
         tabBarInactiveTintColor: colors.mutedForeground,
         headerShown: false,
         tabBarStyle: {
           position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.background,
-          borderTopWidth: isWeb ? 1 : 0,
-          borderTopColor: colors.border,
-          elevation: 0,
-          ...(isWeb ? { height: 84 } : {}),
+          bottom: isIOS ? insets.bottom : 10,
+          left: isWeb ? 0 : 16,
+          right: isWeb ? 0 : 16,
+          height: isWeb ? 80 : 68,
+          borderRadius: isWeb ? 0 : 20,
+          backgroundColor: "rgba(255,255,255,0.04)",
+          borderTopWidth: 1,
+          borderTopColor: "rgba(255,255,255,0.06)",
+          borderWidth: isWeb ? 0 : 1,
+          borderColor: "rgba(255,255,255,0.06)",
+          shadowColor: "#818cf8",
+          shadowRadius: 20,
+          shadowOpacity: 0.08,
+          elevation: 10,
+          paddingBottom: isWeb ? 12 : 0,
+          ...(isWeb ? { position: "relative", bottom: 0 } : {}),
         },
         tabBarBackground: () =>
           isIOS ? (
-            <BlurView intensity={100} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+            <BlurView intensity={80} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
           ) : isWeb ? (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: "#0a0a0a" }]} />
           ) : null,
       }}
     >
@@ -60,24 +84,36 @@ function ClassicTabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) =>
-            isIOS ? <SymbolView name="house" tintColor={color} size={24} /> : <Feather name="home" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) =>
+            isIOS ? (
+              <SymbolView name={focused ? "house.fill" : "house"} tintColor={color} size={24} />
+            ) : (
+              <Feather name={focused ? "home" : "home"} size={22} color={color} />
+            ),
         }}
       />
       <Tabs.Screen
         name="players"
         options={{
           title: "Players",
-          tabBarIcon: ({ color }) =>
-            isIOS ? <SymbolView name="person.2" tintColor={color} size={24} /> : <Feather name="users" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) =>
+            isIOS ? (
+              <SymbolView name={focused ? "person.2.fill" : "person.2"} tintColor={color} size={24} />
+            ) : (
+              <Feather name={focused ? "users" : "users"} size={22} color={color} />
+            ),
         }}
       />
       <Tabs.Screen
         name="teams"
         options={{
           title: "Teams",
-          tabBarIcon: ({ color }) =>
-            isIOS ? <SymbolView name="shield" tintColor={color} size={24} /> : <Feather name="shield" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) =>
+            isIOS ? (
+              <SymbolView name={focused ? "shield.fill" : "shield"} tintColor={color} size={24} />
+            ) : (
+              <Feather name={focused ? "shield" : "shield"} size={22} color={color} />
+            ),
         }}
       />
     </Tabs>
