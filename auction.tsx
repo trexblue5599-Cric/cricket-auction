@@ -11,17 +11,21 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useAuction } from "@/context/AuctionContext";
 
+const { width } = Dimensions.get("window");
+
 const ROLE_COLORS: Record<string, string> = {
-  Batsman: "#1d4ed8",
-  Bowler: "#dc2626",
-  "All-Rounder": "#16a34a",
-  "Wicket Keeper": "#7c3aed",
-  Spinner: "#d97706",
+  Batsman: "#818cf8",
+  Bowler: "#f472b6",
+  "All-Rounder": "#34d399",
+  "Wicket Keeper": "#c4b5fd",
+  Spinner: "#fbbf24",
 };
 
 const MIN_SQUAD = 16;
@@ -49,6 +53,7 @@ export default function AuctionScreen() {
   const bidScaleAnim = useRef(new Animated.Value(1)).current;
   const soldFlashAnim = useRef(new Animated.Value(0)).current;
   const cardGlowAnim = useRef(new Animated.Value(0)).current;
+  const flowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
@@ -67,6 +72,23 @@ export default function AuctionScreen() {
     loop.start();
     return () => loop.stop();
   }, [currentPlayer?.id]);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(flowAnim, {
+          toValue: 1,
+          duration: 4000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(flowAnim, {
+          toValue: 0,
+          duration: 4000,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const handleSell = () => {
     sellPlayer();
@@ -100,28 +122,28 @@ export default function AuctionScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.centerMsg, { paddingTop: topPadding }]}>
-          <Feather name="check-circle" size={64} color="#16a34a" />
+          <Feather name="check-circle" size={64} color="#34d399" />
           <Text style={[styles.msgTitle, { color: colors.foreground }]}>Auction Complete!</Text>
           <Text style={[styles.msgSub, { color: colors.mutedForeground }]}>
             All players have been auctioned. Check results!
           </Text>
 
           {understrength.length > 0 && (
-            <View style={[styles.warnBox, { backgroundColor: "#d9770615", borderColor: "#d9770640" }]}>
-              <Feather name="alert-triangle" size={16} color="#d97706" />
-              <Text style={[styles.warnText, { color: "#d97706" }]}>
+            <View style={[styles.warnBox, { backgroundColor: "#fbbf2415", borderColor: "#fbbf2440" }]}>
+              <Feather name="alert-triangle" size={16} color="#fbbf24" />
+              <Text style={[styles.warnText, { color: "#fbbf24" }]}>
                 {understrength.map((t) => t.name).join(", ")} have fewer than {MIN_SQUAD} players
               </Text>
             </View>
           )}
 
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#16a34a" }]} onPress={() => router.push("/results")}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: "#34d399" }]} onPress={() => router.push("/results")}>
             <Text style={styles.actionBtnText}>View Results</Text>
           </TouchableOpacity>
 
           {truly_unsold.length > 0 && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#d97706", marginTop: 0 }]}
+              style={[styles.actionButton, { backgroundColor: "#fbbf24", marginTop: 0 }]}
               onPress={() => {
                 Alert.alert(
                   "Re-auction Unsold Players",
@@ -138,7 +160,7 @@ export default function AuctionScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.secondary, marginTop: 0 }]}
+            style={[styles.actionButton, { backgroundColor: "#1a1a1a", marginTop: 0, borderWidth: 1, borderColor: "#ef444440" }]}
             onPress={() => {
               Alert.alert("Reset Auction", "This will reset all bids. Are you sure?", [
                 { text: "Cancel", style: "cancel" },
@@ -146,7 +168,7 @@ export default function AuctionScreen() {
               ]);
             }}
           >
-            <Text style={[styles.actionBtnText, { color: colors.foreground }]}>Reset Auction</Text>
+            <Text style={[styles.actionBtnText, { color: "#ef4444" }]}>Reset Auction</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -163,7 +185,7 @@ export default function AuctionScreen() {
         style={[
           StyleSheet.absoluteFillObject,
           {
-            backgroundColor: "#16a34a",
+            backgroundColor: "#34d399",
             opacity: soldFlashAnim,
             zIndex: 100,
             alignItems: "center",
@@ -175,74 +197,118 @@ export default function AuctionScreen() {
         {currentBidTeam && <Text style={styles.soldFlashTeam}>{currentBidTeam.name}</Text>}
       </Animated.View>
 
-      {/* Header */}
-      <View style={[styles.auctionHeader, { paddingTop: topPadding + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+      {/* Glass Header */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.02)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.glassHeader, { paddingTop: topPadding + 8, borderBottomColor: "rgba(255,255,255,0.06)" }]}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
           <Feather name="arrow-left" size={24} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Live Auction</Text>
         <Text style={[styles.progressText, { color: colors.mutedForeground }]}>
           {auctionState.currentPlayerIndex + 1}/{unsoldPlayers.length}
         </Text>
-      </View>
+      </LinearGradient>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomPad + 120 }}>
-        {/* Player Card with glow */}
-        <Animated.View style={[styles.auctionCard, { backgroundColor: roleColor, opacity: cardGlowOpacity }]}>
-          {currentPlayer.image ? (
-            <Image source={{ uri: currentPlayer.image }} style={styles.playerAvatarImg} />
-          ) : (
-            <View style={[styles.playerAvatar, { backgroundColor: "rgba(255,255,255,0.25)" }]}>
-              <Text style={styles.playerAvatarText}>{currentPlayer.name.charAt(0)}</Text>
-            </View>
-          )}
-          <Text style={styles.auctionPlayerName}>{currentPlayer.name}</Text>
-          <Text style={styles.auctionPlayerMeta}>
-            {currentPlayer.country} · {currentPlayer.role}
-          </Text>
+        {/* Glass Player Card with Liquid RGB Glow */}
+        <Animated.View
+          style={[
+            styles.glassPlayerCard,
+            {
+              opacity: cardGlowOpacity,
+              borderColor: flowAnim.interpolate({
+                inputRange: [0, 0.3, 0.5, 0.7, 1],
+                outputRange: ['rgba(255,255,255,0.05)', '#ff000088', '#00ff0088', '#0000ff88', 'rgba(255,255,255,0.05)']
+              }),
+              borderWidth: 2,
+              shadowColor: flowAnim.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: ['transparent', '#a78bfa44', 'transparent']
+              }),
+              shadowRadius: 40,
+              shadowOpacity: 0.6,
+              elevation: 15,
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={[roleColor + "30", roleColor + "10"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.cardGradient}
+          >
+            {currentPlayer.image ? (
+              <Image source={{ uri: currentPlayer.image }} style={styles.playerAvatarImg} />
+            ) : (
+              <View style={[styles.playerAvatar, { backgroundColor: roleColor + "40" }]}>
+                <Text style={styles.playerAvatarText}>{currentPlayer.name.charAt(0)}</Text>
+              </View>
+            )}
+            <Text style={styles.auctionPlayerName}>{currentPlayer.name}</Text>
+            <Text style={styles.auctionPlayerMeta}>
+              {currentPlayer.country} · {currentPlayer.role}
+            </Text>
 
-          <View style={styles.statsChips}>
-            {currentPlayer.stats.runs !== undefined && (
-              <View style={styles.statChip}>
-                <Text style={styles.statChipVal}>{currentPlayer.stats.runs}</Text>
-                <Text style={styles.statChipLabel}>Runs</Text>
+            <View style={styles.statsChips}>
+              {currentPlayer.stats.runs !== undefined && (
+                <View style={[styles.statChip, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+                  <Text style={styles.statChipVal}>{currentPlayer.stats.runs}</Text>
+                  <Text style={styles.statChipLabel}>Runs</Text>
+                </View>
+              )}
+              {currentPlayer.stats.wickets !== undefined && (
+                <View style={[styles.statChip, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+                  <Text style={styles.statChipVal}>{currentPlayer.stats.wickets}</Text>
+                  <Text style={styles.statChipLabel}>Wkts</Text>
+                </View>
+              )}
+              {currentPlayer.stats.average !== undefined && (
+                <View style={[styles.statChip, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+                  <Text style={styles.statChipVal}>{currentPlayer.stats.average}</Text>
+                  <Text style={styles.statChipLabel}>Avg</Text>
+                </View>
+              )}
+              <View style={[styles.statChip, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+                <Text style={styles.statChipVal}>{currentPlayer.stats.matches}</Text>
+                <Text style={styles.statChipLabel}>Matches</Text>
               </View>
-            )}
-            {currentPlayer.stats.wickets !== undefined && (
-              <View style={styles.statChip}>
-                <Text style={styles.statChipVal}>{currentPlayer.stats.wickets}</Text>
-                <Text style={styles.statChipLabel}>Wkts</Text>
-              </View>
-            )}
-            {currentPlayer.stats.average !== undefined && (
-              <View style={styles.statChip}>
-                <Text style={styles.statChipVal}>{currentPlayer.stats.average}</Text>
-                <Text style={styles.statChipLabel}>Avg</Text>
-              </View>
-            )}
-            <View style={styles.statChip}>
-              <Text style={styles.statChipVal}>{currentPlayer.stats.matches}</Text>
-              <Text style={styles.statChipLabel}>Matches</Text>
             </View>
-          </View>
+          </LinearGradient>
         </Animated.View>
 
-        {/* Current Bid */}
-        <View style={[styles.bidSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {/* Glass Bid Section */}
+        <LinearGradient
+          colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.02)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={[styles.glassBidSection, { borderColor: "rgba(255,255,255,0.06)" }]}
+        >
           <View style={styles.bidRow}>
             <View>
               <Text style={[styles.bidLabel, { color: colors.mutedForeground }]}>
                 {auctionState.currentBidTeamId ? "Current Bid" : "Base Price"}
               </Text>
               <Animated.Text
-                style={[styles.bidAmount, { color: colors.foreground, transform: [{ scale: bidScaleAnim }] }]}
+                style={[
+                  styles.bidAmount,
+                  {
+                    color: "#ffffff",
+                    textShadowColor: "#818cf8",
+                    textShadowRadius: 25,
+                    transform: [{ scale: bidScaleAnim }],
+                  },
+                ]}
               >
                 ₹{auctionState.currentBid}L
               </Animated.Text>
             </View>
             {currentBidTeam && (
-              <View style={[styles.bidTeamBadge, { backgroundColor: currentBidTeam.color }]}>
-                <Text style={styles.bidTeamText}>{currentBidTeam.shortName}</Text>
+              <View style={[styles.bidTeamBadge, { backgroundColor: currentBidTeam.color + "30", borderColor: currentBidTeam.color + "60" }]}>
+                <Text style={[styles.bidTeamText, { color: currentBidTeam.color }]}>{currentBidTeam.shortName}</Text>
                 <Text style={styles.bidTeamName}>{currentBidTeam.name}</Text>
               </View>
             )}
@@ -250,7 +316,7 @@ export default function AuctionScreen() {
 
           <View style={styles.sellPassRow}>
             <TouchableOpacity
-              style={[styles.passBtn, { borderColor: colors.border }]}
+              style={[styles.glassPassBtn, { borderColor: "rgba(255,255,255,0.08)" }]}
               onPress={() => {
                 Alert.alert("Pass Player", "Skip this player?", [
                   { text: "Cancel", style: "cancel" },
@@ -262,17 +328,24 @@ export default function AuctionScreen() {
               <Text style={[styles.passBtnText, { color: colors.mutedForeground }]}>Pass</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.sellBtn, { backgroundColor: auctionState.currentBidTeamId ? "#16a34a" : colors.muted }]}
+              style={[styles.glassSellBtn, { opacity: auctionState.currentBidTeamId ? 1 : 0.4 }]}
               onPress={handleSell}
               disabled={!auctionState.currentBidTeamId}
             >
-              <Feather name="check" size={20} color={auctionState.currentBidTeamId ? "#fff" : colors.mutedForeground} />
-              <Text style={[styles.sellBtnText, { color: auctionState.currentBidTeamId ? "#fff" : colors.mutedForeground }]}>
-                SOLD!
-              </Text>
+              <LinearGradient
+                colors={auctionState.currentBidTeamId ? ["#34d399", "#10b981"] : ["#1a1a1a", "#1a1a1a"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.sellGradient}
+              >
+                <Feather name="check" size={20} color={auctionState.currentBidTeamId ? "#fff" : colors.mutedForeground} />
+                <Text style={[styles.sellBtnText, { color: auctionState.currentBidTeamId ? "#fff" : colors.mutedForeground }]}>
+                  SOLD!
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* Team Bidding Grid */}
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Place Bid</Text>
@@ -286,12 +359,16 @@ export default function AuctionScreen() {
               <TouchableOpacity
                 key={team.id}
                 style={[
-                  styles.teamBidCard,
+                  styles.glassTeamCard,
                   {
-                    backgroundColor: isLeading ? team.color : colors.card,
-                    borderColor: isLeading ? team.color : needsPlayers ? "#d97706" : colors.border,
-                    borderWidth: needsPlayers && !isLeading ? 2 : 2,
-                    opacity: canBid ? 1 : 0.5,
+                    backgroundColor: isLeading ? team.color + "30" : "rgba(255,255,255,0.04)",
+                    borderColor: isLeading ? team.color : needsPlayers ? "#fbbf2440" : "rgba(255,255,255,0.06)",
+                    borderWidth: isLeading ? 2 : 1,
+                    opacity: canBid ? 1 : 0.4,
+                    shadowColor: isLeading ? team.color : 'transparent',
+                    shadowRadius: isLeading ? 20 : 0,
+                    shadowOpacity: isLeading ? 0.3 : 0,
+                    elevation: isLeading ? 10 : 0,
                   },
                 ]}
                 onPress={() => canBid && placeBid(team.id)}
@@ -306,7 +383,7 @@ export default function AuctionScreen() {
                 <Text style={[styles.teamBidBudget, { color: isLeading ? "#fff" : colors.foreground }]}>
                   ₹{team.remainingBudget}L
                 </Text>
-                <Text style={[styles.teamBidPlayers, { color: needsPlayers && !isLeading ? "#d97706" : isLeading ? "rgba(255,255,255,0.7)" : colors.mutedForeground }]}>
+                <Text style={[styles.teamBidPlayers, { color: needsPlayers && !isLeading ? "#fbbf24" : isLeading ? "rgba(255,255,255,0.7)" : colors.mutedForeground }]}>
                   {teamPlayers.length}/{MIN_SQUAD}
                 </Text>
               </TouchableOpacity>
@@ -321,11 +398,17 @@ export default function AuctionScreen() {
             {[...auctionState.biddingHistory].reverse().slice(0, 5).map((bid, i) => {
               const t = teams.find((te) => te.id === bid.teamId);
               return (
-                <View key={i} style={[styles.historyItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <LinearGradient
+                  key={i}
+                  colors={["rgba(255,255,255,0.04)", "rgba(255,255,255,0.01)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.glassHistoryItem, { borderColor: "rgba(255,255,255,0.06)" }]}
+                >
                   <View style={[styles.historyDot, { backgroundColor: t?.color || colors.primary }]} />
                   <Text style={[styles.historyTeam, { color: colors.foreground }]}>{t?.name || "Unknown"}</Text>
-                  <Text style={[styles.historyAmount, { color: colors.primary }]}>₹{bid.amount}L</Text>
-                </View>
+                  <Text style={[styles.historyAmount, { color: "#818cf8", textShadowColor: "#818cf8", textShadowRadius: 10 }]}>₹{bid.amount}L</Text>
+                </LinearGradient>
               );
             })}
           </>
@@ -337,9 +420,16 @@ export default function AuctionScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  auctionHeader: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: 1,
+  glassHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+  },
+  headerIcon: {
+    padding: 4,
   },
   headerTitle: { fontSize: 18, fontWeight: "700" },
   progressText: { fontSize: 14, fontWeight: "600" },
@@ -359,51 +449,111 @@ const styles = StyleSheet.create({
   warnText: { fontSize: 13, fontWeight: "600", flex: 1 },
   soldFlashText: { color: "#fff", fontSize: 64, fontWeight: "900", letterSpacing: 4 },
   soldFlashTeam: { color: "rgba(255,255,255,0.85)", fontSize: 22, fontWeight: "700", marginTop: 8 },
-  auctionCard: { margin: 16, borderRadius: 24, padding: 24, alignItems: "center" },
+  
+  // Glass Player Card
+  glassPlayerCard: {
+    margin: 16,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  cardGradient: {
+    padding: 24,
+    alignItems: "center",
+  },
   playerAvatar: {
     width: 90, height: 90, borderRadius: 45, alignItems: "center", justifyContent: "center", marginBottom: 12,
   },
   playerAvatarImg: {
-    width: 90, height: 90, borderRadius: 45, marginBottom: 12, borderWidth: 3, borderColor: "rgba(255,255,255,0.5)",
+    width: 90, height: 90, borderRadius: 45, marginBottom: 12, borderWidth: 3, borderColor: "rgba(255,255,255,0.2)",
   },
   playerAvatarText: { fontSize: 36, fontWeight: "800", color: "#fff" },
   auctionPlayerName: { fontSize: 26, fontWeight: "800", color: "#fff", textAlign: "center" },
-  auctionPlayerMeta: { fontSize: 15, color: "rgba(255,255,255,0.8)", marginTop: 4, marginBottom: 16 },
-  statsChips: { flexDirection: "row", gap: 12, flexWrap: "wrap", justifyContent: "center" },
+  auctionPlayerMeta: { fontSize: 15, color: "rgba(255,255,255,0.6)", marginTop: 4, marginBottom: 16 },
+  statsChips: { flexDirection: "row", gap: 10, flexWrap: "wrap", justifyContent: "center" },
   statChip: {
-    alignItems: "center", backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
   },
   statChipVal: { fontSize: 18, fontWeight: "700", color: "#fff" },
-  statChipLabel: { fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 },
-  bidSection: { marginHorizontal: 16, borderRadius: 20, borderWidth: 1, padding: 16, marginBottom: 16 },
+  statChipLabel: { fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 },
+
+  // Glass Bid Section
+  glassBidSection: {
+    marginHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+  },
   bidRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
   bidLabel: { fontSize: 13, marginBottom: 4 },
   bidAmount: { fontSize: 36, fontWeight: "800" },
-  bidTeamBadge: { borderRadius: 12, padding: 12, alignItems: "center" },
-  bidTeamText: { color: "#fff", fontSize: 18, fontWeight: "800" },
-  bidTeamName: { color: "rgba(255,255,255,0.8)", fontSize: 11, marginTop: 2 },
+  bidTeamBadge: {
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  bidTeamText: { fontSize: 18, fontWeight: "800" },
+  bidTeamName: { color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 2 },
   sellPassRow: { flexDirection: "row", gap: 10 },
-  passBtn: {
-    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1,
+  glassPassBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.03)",
   },
   passBtnText: { fontSize: 15, fontWeight: "600" },
-  sellBtn: {
-    flex: 2, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 8, paddingVertical: 14, borderRadius: 14,
+  glassSellBtn: {
+    flex: 2,
+    borderRadius: 14,
+    overflow: "hidden",
+  },
+  sellGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
   },
   sellBtnText: { fontSize: 16, fontWeight: "800" },
+
   sectionTitle: { fontSize: 18, fontWeight: "700", paddingHorizontal: 20, marginBottom: 12 },
   teamsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 16, gap: 10, marginBottom: 16 },
-  teamBidCard: { width: "46%", borderRadius: 16, borderWidth: 2, padding: 14, alignItems: "center" },
+  glassTeamCard: {
+    width: (width - 42) / 2,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
   teamBidShort: { fontSize: 20, fontWeight: "800" },
   teamBidName: { fontSize: 11, marginTop: 2, textAlign: "center" },
   teamBidBudget: { fontSize: 16, fontWeight: "700", marginTop: 6 },
   teamBidPlayers: { fontSize: 11, marginTop: 2 },
-  historyItem: {
-    flexDirection: "row", alignItems: "center", marginHorizontal: 16,
-    borderRadius: 10, borderWidth: 1, padding: 12, marginBottom: 6, gap: 10,
+  
+  glassHistoryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 6,
+    gap: 10,
   },
   historyDot: { width: 10, height: 10, borderRadius: 5 },
   historyTeam: { flex: 1, fontSize: 14, fontWeight: "600" },
