@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useAuction } from "@/context/AuctionContext";
 
@@ -86,16 +87,21 @@ export default function RetainScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topPadding + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()}>
+      {/* Glass Header */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.02)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.glassHeader, { paddingTop: topPadding + 8, borderBottomColor: "rgba(255,255,255,0.06)" }]}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
           <Feather name="arrow-left" size={24} color={colors.foreground} />
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Retain Players</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>⭐ Retain Players</Text>
           <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>Up to {MAX_RETAIN} players per team</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomPad + 32 }}>
 
@@ -109,10 +115,15 @@ export default function RetainScreen() {
               <TouchableOpacity
                 key={team.id}
                 style={[
-                  styles.teamChip,
+                  styles.glassTeamChip,
                   {
-                    backgroundColor: isSelected ? team.color : colors.card,
-                    borderColor: isSelected ? team.color : colors.border,
+                    backgroundColor: isSelected ? team.color + "30" : "rgba(255,255,255,0.04)",
+                    borderColor: isSelected ? team.color : "rgba(255,255,255,0.06)",
+                    borderWidth: isSelected ? 2 : 1,
+                    shadowColor: isSelected ? team.color : 'transparent',
+                    shadowRadius: isSelected ? 15 : 0,
+                    shadowOpacity: isSelected ? 0.3 : 0,
+                    elevation: isSelected ? 8 : 0,
                   },
                 ]}
                 onPress={() => setSelectedTeamId(team.id)}
@@ -121,7 +132,7 @@ export default function RetainScreen() {
                 <Text style={[styles.teamChipName, { color: isSelected ? "rgba(255,255,255,0.85)" : colors.mutedForeground }]} numberOfLines={1}>
                   {team.name}
                 </Text>
-                <View style={[styles.retainBadge, { backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : colors.muted }]}>
+                <View style={[styles.retainBadge, { backgroundColor: isSelected ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)" }]}>
                   <Text style={[styles.retainBadgeText, { color: isSelected ? "#fff" : colors.mutedForeground }]}>
                     {retained}/{MAX_RETAIN}
                   </Text>
@@ -138,7 +149,13 @@ export default function RetainScreen() {
               Retained — {selectedTeam.name}
             </Text>
             {retainedByTeam[selectedTeam.id].map((player) => (
-              <View key={player.id} style={[styles.playerRow, { backgroundColor: selectedTeam.color + "18", borderColor: selectedTeam.color + "50" }]}>
+              <LinearGradient
+                key={player.id}
+                colors={[selectedTeam.color + "20", selectedTeam.color + "08"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.glassPlayerRow, { borderColor: selectedTeam.color + "30" }]}
+              >
                 {player.image ? (
                   <Image source={{ uri: player.image }} style={styles.playerImg} />
                 ) : (
@@ -153,12 +170,12 @@ export default function RetainScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity
-                  style={[styles.releaseBtn, { borderColor: colors.destructive }]}
+                  style={[styles.glassReleaseBtn, { borderColor: "#ef444440" }]}
                   onPress={() => handleRelease(player.id)}
                 >
-                  <Feather name="x" size={16} color={colors.destructive} />
+                  <Feather name="x" size={16} color="#ef4444" />
                 </TouchableOpacity>
-              </View>
+              </LinearGradient>
             ))}
           </>
         )}
@@ -181,7 +198,7 @@ export default function RetainScreen() {
 
         {availablePlayers.length === 0 && selectedTeamId && (
           <View style={styles.hintBox}>
-            <Feather name="check-circle" size={20} color="#16a34a" />
+            <Feather name="check-circle" size={20} color="#34d399" />
             <Text style={[styles.hintText, { color: colors.mutedForeground }]}>
               All players have been retained
             </Text>
@@ -194,10 +211,9 @@ export default function RetainScreen() {
             <TouchableOpacity
               key={player.id}
               style={[
-                styles.playerRow,
+                styles.glassPlayerRow,
                 {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
+                  borderColor: "rgba(255,255,255,0.06)",
                   opacity: !selectedTeamId ? 0.5 : 1,
                 },
               ]}
@@ -207,7 +223,7 @@ export default function RetainScreen() {
               {player.image ? (
                 <Image source={{ uri: player.image }} style={styles.playerImg} />
               ) : (
-                <View style={[styles.playerAvatar, { backgroundColor: colors.primary }]}>
+                <View style={[styles.playerAvatar, { backgroundColor: "#818cf8" }]}>
                   <Text style={styles.playerAvatarText}>{player.name.charAt(0)}</Text>
                 </View>
               )}
@@ -218,9 +234,14 @@ export default function RetainScreen() {
                 </Text>
               </View>
               {selectedTeamId && (
-                <View style={[styles.addBtn, { backgroundColor: canRetain ? colors.primary : colors.muted }]}>
+                <LinearGradient
+                  colors={canRetain ? ["#818cf8", "#a78bfa"] : ["#1a1a1a", "#1a1a1a"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.glassAddBtn, { opacity: canRetain ? 1 : 0.3 }]}
+                >
                   <Feather name="plus" size={18} color={canRetain ? "#fff" : colors.mutedForeground} />
-                </View>
+                </LinearGradient>
               )}
             </TouchableOpacity>
           );
@@ -232,13 +253,14 @@ export default function RetainScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
+  glassHeader: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 1,
   },
+  headerIcon: { padding: 4 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
   headerSub: { fontSize: 12, marginTop: 2 },
   sectionTitle: {
@@ -249,12 +271,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   teamRow: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
-  teamChip: {
+  glassTeamChip: {
     borderRadius: 14,
-    borderWidth: 2,
+    borderWidth: 1,
     padding: 12,
     alignItems: "center",
     minWidth: 90,
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
   teamChipShort: { fontSize: 18, fontWeight: "800" },
   teamChipName: { fontSize: 11, marginTop: 2, textAlign: "center" },
@@ -263,9 +286,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
+    backgroundColor: "rgba(255,255,255,0.06)",
   },
   retainBadgeText: { fontSize: 11, fontWeight: "700" },
-  playerRow: {
+  glassPlayerRow: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 16,
@@ -274,6 +298,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 12,
     gap: 12,
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
   playerImg: { width: 44, height: 44, borderRadius: 22 },
   playerAvatar: {
@@ -286,12 +311,13 @@ const styles = StyleSheet.create({
   playerAvatarText: { color: "#fff", fontSize: 18, fontWeight: "800" },
   playerName: { fontSize: 15, fontWeight: "700" },
   playerMeta: { fontSize: 12, marginTop: 2 },
-  releaseBtn: {
+  glassReleaseBtn: {
     borderWidth: 1,
     borderRadius: 8,
     padding: 6,
+    backgroundColor: "rgba(239,68,68,0.1)",
   },
-  addBtn: {
+  glassAddBtn: {
     width: 34,
     height: 34,
     borderRadius: 10,
