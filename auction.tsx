@@ -46,37 +46,67 @@ export default function AuctionScreen() {
   const roleColor = currentPlayer ? ROLE_COLORS[currentPlayer.role] || colors.primary : colors.primary;
 
   // Animations
-  const bidScaleAnim = useRef(new Animated.Value(1)).current;
-  const soldFlashAnim = useRef(new Animated.Value(0)).current;
-  const cardGlowAnim = useRef(new Animated.Value(0)).current;
-  const flowAnim = useRef(new Animated.Value(0)).current;
+const bidScaleAnim = useRef(new Animated.Value(1)).current;
+const soldFlashAnim = useRef(new Animated.Value(0)).current;
+const cardGlowAnim = useRef(new Animated.Value(0)).current;
+const flowAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
+useEffect(() => {
+  Animated.sequence([
+    Animated.timing(bidScaleAnim, {
+      toValue: 1.25,
+      duration: 130,
+      useNativeDriver: true,
+    }),
+    Animated.timing(bidScaleAnim, {
+      toValue: 1,
+      duration: 130,
+      useNativeDriver: true,
+    }),
+  ]).start();
+}, [auctionState.currentBid]);
+
+useEffect(() => {
+  const loop = Animated.loop(
     Animated.sequence([
-      Animated.timing(bidScaleAnim, { toValue: 1.25, duration: 130, useNativeDriver: true }),
-      Animated.timing(bidScaleAnim, { toValue: 1, duration: 130, useNativeDriver: true }),
-    ]).start();
-  }, [auctionState.currentBid]);
+      Animated.timing(cardGlowAnim, {
+        toValue: 1,
+        duration: 1800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardGlowAnim, {
+        toValue: 0,
+        duration: 1800,
+        useNativeDriver: true,
+      }),
+    ])
+  );
+  loop.start();
+  return () => loop.stop();
+}, [currentPlayer?.id]);
 
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(cardGlowAnim, { toValue: 1, duration: 1800, useNativeDriver: true }),
-        Animated.timing(cardGlowAnim, { toValue: 0, duration: 1800, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [currentPlayer?.id]);
-
-  const handleSell = () => {
-    sellPlayer();
+// Liquid RGB Flow Animation
+useEffect(() => {
+  Animated.loop(
     Animated.sequence([
-      Animated.timing(soldFlashAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
-      Animated.delay(700),
-      Animated.timing(soldFlashAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
-    ]).start();
-  };
+      Animated.timing(flowAnim, {
+        toValue: 1,
+        duration: 4000,
+        useNativeDriver: false,
+      }),
+      Animated.timing(flowAnim, {
+        toValue: 0,
+        duration: 4000,
+        useNativeDriver: false,
+      }),
+    ])
+  ).start();
+}, []);
+
+const cardGlowOpacity = cardGlowAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: [0.7, 1],
+});
 
   const cardGlowOpacity = cardGlowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
 
