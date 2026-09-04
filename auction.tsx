@@ -42,10 +42,9 @@ export default function AuctionScreen() {
     () => (auctionState.currentBidTeamId ? teams.find((t) => t.id === auctionState.currentBidTeamId) : null),
     [teams, auctionState.currentBidTeamId]
   );
+const roleColor = currentPlayer ? ROLE_COLORS[currentPlayer.role] || colors.primary : colors.primary;
 
-  const roleColor = currentPlayer ? ROLE_COLORS[currentPlayer.role] || colors.primary : colors.primary;
-
-  // Animations
+// Animations
 const bidScaleAnim = useRef(new Animated.Value(1)).current;
 const soldFlashAnim = useRef(new Animated.Value(0)).current;
 const cardGlowAnim = useRef(new Animated.Value(0)).current;
