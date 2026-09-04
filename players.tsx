@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useAuction } from "@/context/AuctionContext";
 import { PlayerCard } from "@/components/PlayerCard";
@@ -37,20 +38,53 @@ export default function PlayersScreen() {
 
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
+  const soldCount = players.filter((p) => p.teamId).length;
+  const unsoldCount = players.filter((p) => !p.teamId).length;
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.topBar, { paddingTop: topPadding + 12 }]}>
-        <Text style={[styles.screenTitle, { color: colors.foreground }]}>Players</Text>
+      {/* Glass Header */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.02)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.glassHeader, { paddingTop: topPadding + 12, borderBottomColor: "rgba(255,255,255,0.06)" }]}
+      >
+        <Text style={[styles.screenTitle, { color: colors.foreground }]}>🏏 Players</Text>
         <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: colors.primary }]}
+          style={styles.addBtn}
           onPress={() => router.push("/players/create")}
         >
-          <Feather name="plus" size={20} color="#fff" />
+          <LinearGradient
+            colors={["#818cf8", "#a78bfa"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.addBtnGradient}
+          >
+            <Feather name="plus" size={20} color="#fff" />
+          </LinearGradient>
         </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <View style={[styles.glassStat, { borderColor: "rgba(129,140,248,0.2)" }]}>
+          <Text style={[styles.statNum, { color: "#818cf8" }]}>{players.length}</Text>
+          <Text style={styles.statLabel}>Total</Text>
+        </View>
+        <View style={[styles.glassStat, { borderColor: "rgba(52,211,153,0.2)" }]}>
+          <Text style={[styles.statNum, { color: "#34d399" }]}>{soldCount}</Text>
+          <Text style={styles.statLabel}>Sold</Text>
+        </View>
+        <View style={[styles.glassStat, { borderColor: "rgba(244,114,182,0.2)" }]}>
+          <Text style={[styles.statNum, { color: "#f472b6" }]}>{unsoldCount}</Text>
+          <Text style={styles.statLabel}>Unsold</Text>
+        </View>
       </View>
 
-      <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Feather name="search" size={18} color={colors.mutedForeground} />
+      {/* Glass Search Bar */}
+      <View style={[styles.glassSearch, { borderColor: "rgba(255,255,255,0.06)" }]}>
+        <Feather name="search" size={20} color={colors.mutedForeground} />
         <TextInput
           style={[styles.searchInput, { color: colors.foreground }]}
           placeholder="Search players..."
@@ -60,11 +94,12 @@ export default function PlayersScreen() {
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={() => setSearch("")}>
-            <Feather name="x" size={18} color={colors.mutedForeground} />
+            <Feather name="x" size={20} color={colors.mutedForeground} />
           </TouchableOpacity>
         )}
       </View>
 
+      {/* Role Filters */}
       <FlatList
         horizontal
         data={ROLES}
@@ -72,25 +107,25 @@ export default function PlayersScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[
-              styles.roleChip,
+              styles.glassFilter,
               {
-                backgroundColor: selectedRole === item ? colors.primary : colors.card,
-                borderColor: selectedRole === item ? colors.primary : colors.border,
+                borderColor: selectedRole === item ? "#818cf8" : "rgba(255,255,255,0.06)",
+                backgroundColor: selectedRole === item ? "rgba(129,140,248,0.15)" : "rgba(255,255,255,0.04)",
               },
             ]}
             onPress={() => setSelectedRole(item)}
           >
             <Text
               style={[
-                styles.roleChipText,
-                { color: selectedRole === item ? "#fff" : colors.foreground },
+                styles.filterText,
+                { color: selectedRole === item ? "#818cf8" : colors.mutedForeground },
               ]}
             >
               {item}
             </Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={styles.roleList}
+        contentContainerStyle={styles.filterList}
         showsHorizontalScrollIndicator={false}
       />
 
@@ -131,52 +166,82 @@ export default function PlayersScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: {
+  glassHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
   },
   screenTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "800",
   },
   addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  addBtnGradient: {
+    padding: 10,
     alignItems: "center",
     justifyContent: "center",
   },
-  searchBar: {
+  statsRow: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  glassStat: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
+    alignItems: "center",
+  },
+  statNum: {
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  statLabel: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.4)",
+    marginTop: 2,
+    fontWeight: "600",
+  },
+  glassSearch: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    gap: 8,
-    marginBottom: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    gap: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
+    padding: 0,
   },
-  roleList: {
+  filterList: {
     paddingHorizontal: 16,
     gap: 8,
+    marginTop: 12,
     marginBottom: 8,
   },
-  roleChip: {
-    paddingHorizontal: 14,
+  glassFilter: {
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     marginRight: 8,
   },
-  roleChipText: {
+  filterText: {
     fontSize: 13,
     fontWeight: "600",
   },
@@ -185,7 +250,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 8,
   },
-  list: { paddingTop: 4 },
+  list: { paddingTop: 4, paddingHorizontal: 16 },
   empty: {
     alignItems: "center",
     paddingTop: 60,
